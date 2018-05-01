@@ -1,4 +1,13 @@
-#include "defines.hpp"
-#include "dialog.hpp"
-#include "functions.hpp"
+#include "functions\Atmo_FPSMonitor\defines.hpp"
 
+class RscTitles
+{
+	#include "functions\Atmo_FPSMonitor\AtmoRscTitles.hpp"
+};
+
+class CfgFunctions
+{
+
+	#include "functions\Atmo_FPSMonitor\AtmoFunctions.hpp"
+
+};
