@@ -1,7 +1,7 @@
 // Add a show/fade action - bound to the User1 action will make this customizable
 // oh, and the display need reactivating every time on player death
 #define ADDACTION_TOGGLEGRAPH \
-player addAction ["<t color='#00FF00'>Toggle fps Monitor", \
+_addActionID = player addAction ["<t color='#00FF00'>Toggle fps Monitor", \
 					{ \
 						_display = uiNamespace getVariable "Atmo_FPSMonitor_Display"; \
 						{ \
@@ -18,7 +18,8 @@ player addAction ["<t color='#00FF00'>Toggle fps Monitor", \
 					0, \
 					false, \
 					true, \
-					"User1" ];
+					"User1" ];\
+player setVariable ["Atmo_addActionID",_addActionID];
 
 disableSerialization;
 
@@ -51,12 +52,12 @@ disableSerialization;
 // TODO
 "Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
 
-ADDACTION_TOGGLEGRAPH
+//ADDACTION_TOGGLEGRAPH
 
 if (isMultiplayer) then {
 	player addEventHandler ["Respawn",{
 		params ["_unit", "_corpse"];
-		removeAllActions _corpse;
+		_corpse removeAction (_corpse getVariable ["Atmo_addActionID",-1]);
 		ADDACTION_TOGGLEGRAPH
 	}];
 };
