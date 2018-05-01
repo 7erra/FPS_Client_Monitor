@@ -1,3 +1,6 @@
+waitUntil {player == player};
+sleep 2;
+
 // Add a show/fade action - bound to the User1 action will make this customizable
 // oh, and the display need reactivating every time on player death
 #define ADDACTION_TOGGLEGRAPH \
