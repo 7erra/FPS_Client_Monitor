@@ -52,7 +52,7 @@ disableSerialization;
 // TODO
 "Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
 
-//ADDACTION_TOGGLEGRAPH
+ADDACTION_TOGGLEGRAPH
 
 if (isMultiplayer) then {
 	player addEventHandler ["Respawn",{
