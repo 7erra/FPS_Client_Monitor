@@ -70,6 +70,7 @@ _Graph1_maxValue = 1;
 _Graph1_maxBars = 60; // 1 secs
 _Graph1_maxWidth 	= ctrlPosition _Graph1 select 2;
 _Graph1_maxHeight 	= 0.9 * (ctrlPosition _Graph1 select 3);
+// try : _Graph1_barWidth = pixelW * 2;
 _Graph1_barWidth =  _Graph1_maxWidth / _Graph1_maxBars;
 _Graph1_bars = [];
 // Create the progress bars
@@ -82,7 +83,7 @@ for "_i" from 1 to _Graph1_maxBars do {
 // Set the variables needed and create the Progress bars for graph2
 _Graph2_maxValue = _Graph1_maxValue;
 _Graph2_maxBars = 60; // 1 minute
-_Graph2_maxWidth 	= ctrlPosition _Graph2 select 2; // try : _Graph1_barWidth = pixelW * 2;
+_Graph2_maxWidth 	= ctrlPosition _Graph2 select 2; 
 _Graph2_maxHeight 	= 0.9 * (ctrlPosition _Graph2 select 3);
 _Graph2_barWidth =  _Graph2_maxWidth / _Graph2_maxBars;
 _Graph2_bars = [];
