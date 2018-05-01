@@ -1,3 +1,29 @@
+waitUntil {player == player};
+sleep 2;
+
+// Add a show/fade action - bound to the User1 action will make this customizable
+// oh, and the display need reactivating every time on player death
+#define ADDACTION_TOGGLEGRAPH \
+_addActionID = player addAction ["<t color='#00FF00'>Toggle fps Monitor", \
+					{ \
+						_display = uiNamespace getVariable "Atmo_FPSMonitor_Display"; \
+						{ \
+							_scale = ctrlScale _x; \
+							if (_scale < 0.1) then { \
+								_x ctrlSetScale 1; \
+							} else { \
+								_x ctrlSetScale 0; \
+							}; \
+							_x ctrlCommit 0; \
+						} forEach allControls _display; \
+					}, \
+					nil, \
+					0, \
+					false, \
+					true, \
+					"User1" ];\
+player setVariable ["Atmo_addActionID",_addActionID];
+
 disableSerialization;
 
 // Features :
@@ -14,7 +40,7 @@ disableSerialization;
 //			- repositioning
 //			- add labels - vertical axis
 //			- add x axis - estimate of time... this may change with server load
-//			
+//
 // 	TODO: Generic monitoring.
 // 			- monitor any variable of {code expression} passed (can do this already do this (call compile "expression"))
 //			- generic graphing tools
@@ -26,40 +52,26 @@ disableSerialization;
 //
 // 	TODO: make into a module? - never done this before, could be fun.
 
-// TODO	
+// TODO
 "Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
- 
-// Add a show/fade action - bound to the User1 action will make this customizable
-// oh, and the display need reactivating every time on player death
-player addAction ["<t color='#00FF00'>Toggle fps Monitor",
-					{	
-						_display = uiNamespace getVariable "Atmo_FPSMonitor_Display";
-						{
-							// Can't seem to find how to hide the dialog? but this is actually quite good
-							// CtrlShow disables the 'background' updating of the control 
-							_scale = ctrlScale _x;
-							if (_scale < 0.1) then {
-								_x ctrlSetScale 1; // Show
-							} else {
-								_x ctrlSetScale 0; // Hide
-							};
-							_x ctrlCommit 0;
-						} forEach allControls _display;
-					},
-					nil,
-					0,
-					false,
-					true,
-					"User1" ];
 
-// add EH here to detect player respawn? or make scripter add to OnPlayerRespawn.sqf?
+ADDACTION_TOGGLEGRAPH
+
+if (isMultiplayer) then {
+	player addEventHandler ["Respawn",{
+		params ["_unit", "_corpse"];
+		_corpse removeAction (_corpse getVariable ["Atmo_addActionID",-1]);
+		ADDACTION_TOGGLEGRAPH
+	}];
+};
+
 private _layer 		= ("Atmo_FPSMonitor_layer" call BIS_fnc_rscLayer) cutRsc ["Atmo_FPSMonitor", "PLAIN"];
 private _display 	= uiNamespace getVariable "Atmo_FPSMonitor_Display";
 
 // Get the controls in the display
 private _TXTfps = _display displayCtrl 1000;
 private _Graph1	= _display displayCtrl 2000;
-private _Graph2	= _display displayCtrl 2001; 
+private _Graph2	= _display displayCtrl 2001;
 private _Graph3 = _display displayCtrl 2002;
 
 // The sweep duration of the first graph
@@ -117,9 +129,9 @@ private _Graph2_total = 0;
 private _Graph2_total = 0;
 
 while {true} do {
-	
+
 	_value = diag_fps;
-	
+
 	_Graph1_total = _Graph1_total + _value;
 	_bar = _Graph1_bars select _Graph1_frame;
 	_bar ctrlSetFade 0;
@@ -128,7 +140,7 @@ while {true} do {
 	_bar ctrlSetFade 0.9 ;
 	_bar ctrlCommit _delay * _Graph1_maxBars;
 	_TXTfps ctrlSetText format ["fps : %1", _value toFixed 2]; // Set the text
-	
+
 	// Resize all the progress bars if exceeds height
 	if (_value > _Graph1_maxValue) then {
 		_oldMaxValue = _Graph1_maxValue;
@@ -136,11 +148,11 @@ while {true} do {
 		{
 			if (ctrlType _x == 8) then {
 				_pos = (progressPosition _x);
-				_x progressSetPosition ( _pos * _oldMaxValue / _Graph1_maxValue);	
+				_x progressSetPosition ( _pos * _oldMaxValue / _Graph1_maxValue);
 			};
 		} forEach allControls _display;
 	};
-	
+
 	// Set a bar in Graph2
 	if (_Graph1_frame == _Graph1_maxBars - 1) then {
 		_value = _Graph1_total / _Graph1_maxBars;
@@ -151,7 +163,7 @@ while {true} do {
 		_bar progressSetPosition (_value / _Graph1_maxValue);
 		_bar ctrlSetFade 0.9 ;
 		_bar ctrlCommit _delay * _Graph2_maxBars * _Graph1_maxBars;
-		
+
 		if (_Graph2_frame == _Graph2_maxBars - 1) then {
 			_value = _Graph2_total / _Graph2_maxBars;
 			_bar = _Graph3_bars select _Graph3_frame;
@@ -161,15 +173,14 @@ while {true} do {
 			_bar ctrlSetFade 0.9 ;
 			_bar ctrlCommit _delay * _Graph3_maxBars * _Graph2_maxBars * _Graph1_maxBars;
 			_Graph3_frame = (_Graph3_frame + 1) mod _Graph3_maxBars;
-			_Graph2_total = 0; // Reset the total for the second graph	
+			_Graph2_total = 0; // Reset the total for the second graph
 		};
-	
+
 		_Graph2_frame = (_Graph2_frame + 1) mod _Graph2_maxBars;
 		_Graph1_total = 0; // Reset the total for the first graph
-	
+
 	};
-	
+
 	_Graph1_frame = (_Graph1_frame + 1) mod _Graph1_maxBars;
 	uisleep _delay; // Doesn't slow on client frame rate drop?
-	
 };
