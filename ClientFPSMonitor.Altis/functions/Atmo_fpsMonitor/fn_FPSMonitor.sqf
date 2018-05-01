@@ -1,7 +1,7 @@
 disableSerialization;
 
 // Features :
-// 		- pixel perfect lie up of bars!
+// 		- pixel perfect line up of bars!
 //
 // TODO: code tidy and re-factoring
 //			- can I make more efficient and smaller?
@@ -27,7 +27,7 @@ disableSerialization;
 // 	TODO: make into a module? - never done this before, could be fun.
 
 // TODO	
-"Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
+// "Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
  
 // Add a show/fade action - bound to the User1 action will make this customizable
 // oh, and the display need reactivating every time on player death
@@ -70,7 +70,8 @@ _Graph1_maxValue = 1;
 _Graph1_maxBars = 60; // 1 secs
 _Graph1_maxWidth 	= ctrlPosition _Graph1 select 2;
 _Graph1_maxHeight 	= 0.9 * (ctrlPosition _Graph1 select 3);
-_Graph1_barWidth =  _Graph1_maxWidth / _Graph1_maxBars;
+_Graph1_barWidth = pixelW * 2;
+//_Graph1_barWidth =  _Graph1_maxWidth / _Graph1_maxBars;
 _Graph1_bars = [];
 // Create the progress bars
 for "_i" from 1 to _Graph1_maxBars do {
@@ -106,7 +107,6 @@ for "_i" from 1 to _Graph3_maxBars do {
 	_bar ctrlSetPosition [(_i-1) * _Graph3_barWidth, 0,  _Graph3_barWidth, _Graph3_maxHeight];
 	_Graph3_bars pushBack _bar;
 };
-
 
 private _Graph1_frame = 0;
 private _Graph2_frame = 0;
