@@ -1,7 +1,9 @@
+Params ["_expression"];
+
  if (isServer) then {
-	[] spawn Atmo_fnc_FPSBroadcast;
+	[_expression] spawn Atmo_fnc_FPSBroadcast;
 };
 
 if (hasInterface) then {
-	[] spawn Atmo_fnc_FPSMonitor;
+	[_expression] spawn Atmo_fnc_FPSMonitor;
 };
