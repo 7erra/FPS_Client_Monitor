@@ -1,32 +1,4 @@
-waitUntil {player == player};
-sleep 2;
-
-// Add a show/fade action - bound to the User1 action will make this customizable
-// oh, and the display need reactivating every time on player death
-#define ADDACTION_TOGGLEGRAPH \
-_addActionID = player addAction ["<t color='#00FF00'>Toggle fps Monitor", \
-					{ \
-						_display = uiNamespace getVariable "Atmo_FPSMonitor_Display"; \
-						{ \
-							_scale = ctrlScale _x; \
-							if (_scale < 0.1) then { \
-								_x ctrlSetScale 1; \
-							} else { \
-								_x ctrlSetScale 0; \
-							}; \
-							_x ctrlCommit 0; \
-						} forEach allControls _display; \
-					}, \
-					nil, \
-					0, \
-					false, \
-					true, \
-					"User1" ];\
-player setVariable ["Atmo_addActionID",_addActionID];
-
-disableSerialization;
-
-// Features :
+/ Features :
 // 		- pixel perfect lie up of bars!
 //
 // TODO: code tidy and re-factoring
@@ -35,6 +7,7 @@ disableSerialization;
 //			- (might try getVariable/setVariable on display and control - which can be done but is it fast? no, "setVariable ["myVar", i]" runs twice as slow as "myVar = i")
 //
 // TODO: make a server monitor to monitor the broadcast variable....
+//
 // TODO: add a dialog to enable:
 // 			- resizing of monitor - ensure only in Pixelgrid dimensions...
 //			- repositioning
@@ -50,10 +23,34 @@ disableSerialization;
 //
 //	TODO: Maybe generic Statistical stuff...nb Rube's scripts has lots of this to help.
 //
-// 	TODO: make into a module? - never done this before, could be fun.
+// 	TODO: make into a module/addon? - never done this before, could be fun.
+Params ["_expression"];
 
-// TODO
-"Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
+waitUntil {player == player};
+sleep 2;
+disableSerialization;
+
+// Add a show/fade action - bound to the User1 action will make this customizable
+#define ADDACTION_TOGGLEGRAPH 															\
+_addActionID = player addAction ["<t color='#00FF00'>Toggle fps Monitor", 				\
+					{ 																	\
+						_display = uiNamespace getVariable "Atmo_FPSMonitor_Display"; 	\
+						{ 																\
+							_scale = ctrlScale _x; 										\
+							if (_scale < 0.1) then { 									\
+								_x ctrlSetScale 1; 										\
+							} else { 													\
+								_x ctrlSetScale 0; 										\
+							}; 															\
+							_x ctrlCommit 0; 											\
+						} forEach allControls _display; 								\
+					}, 																	\
+					nil, 																\
+					0, 																	\
+					false, 																\
+					true, 																\
+					"User1" ];															\
+player setVariable ["Atmo_addActionID",_addActionID];
 
 ADDACTION_TOGGLEGRAPH
 
@@ -65,6 +62,10 @@ if (isMultiplayer) then {
 	}];
 };
 
+
+// TODO
+// "Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
+
 private _layer 		= ("Atmo_FPSMonitor_layer" call BIS_fnc_rscLayer) cutRsc ["Atmo_FPSMonitor", "PLAIN"];
 private _display 	= uiNamespace getVariable "Atmo_FPSMonitor_Display";
 
@@ -75,7 +76,7 @@ private _Graph2	= _display displayCtrl 2001;
 private _Graph3 = _display displayCtrl 2002;
 
 // The sweep duration of the first graph
-private _delay = 1/60; // 1 second sweep
+private _delay = 1; // second sweep
 
 // Set the variables needed and create the Progress bars for graph1
 _Graph1_maxValue = 1;
@@ -130,7 +131,7 @@ private _Graph2_total = 0;
 
 while {true} do {
 
-	_value = diag_fps;
+	_value = call compile _expression;
 
 	_Graph1_total = _Graph1_total + _value;
 	_bar = _Graph1_bars select _Graph1_frame;
@@ -139,7 +140,7 @@ while {true} do {
 	_bar progressSetPosition (_value / _Graph1_maxValue);
 	_bar ctrlSetFade 0.9 ;
 	_bar ctrlCommit _delay * _Graph1_maxBars;
-	_TXTfps ctrlSetText format ["fps : %1", _value toFixed 2]; // Set the text
+	_TXTfps ctrlSetText format [_expression + ": %1", _value]; // Set the text
 
 	// Resize all the progress bars if exceeds height
 	if (_value > _Graph1_maxValue) then {
