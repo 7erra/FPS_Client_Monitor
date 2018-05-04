@@ -1,4 +1,4 @@
-/ Features :
+// Features :
 // 		- pixel perfect lie up of bars!
 //
 // TODO: code tidy and re-factoring
@@ -27,7 +27,6 @@
 Params ["_expression"];
 
 waitUntil {player == player};
-sleep 2;
 disableSerialization;
 
 // Add a show/fade action - bound to the User1 action will make this customizable
@@ -63,14 +62,30 @@ if (isMultiplayer) then {
 };
 
 
-// TODO
-// "Atmo_FPSMonitor_ServerFPS" addPublicVariableEventHandler {hint format["Server %1", "hello"]};
+Atmo_fnc_GetDisplay = {
+	// Not quite sure what the params are yet but '_this select 0' is the display
+	uiNamespace setVariable ["Atmo_FPSMonitor_Display", _this select 0];
+};
 
-private _layer 		= ("Atmo_FPSMonitor_layer" call BIS_fnc_rscLayer) cutRsc ["Atmo_FPSMonitor", "PLAIN"];
+// Use the _expresison as the layerName and register it
+private _layer 		= (_expression call BIS_fnc_rscLayer) cutRsc ["Atmo_FPSMonitor", "PLAIN"];
 private _display 	= uiNamespace getVariable "Atmo_FPSMonitor_Display";
 
+// trying to move the control to another place
+// here I have a concept problem - how do I make a new display without 
+// changeing the idd of the class Atmo_FPSMonitor
+// can I make a new display or would I have to make a new set of controls in the display?
+// so maybe just create an empty display then create controls dynamically as they are needed?
+
+{
+	_pos = ctrlPosition _x;
+	_x ctrlSetPosition [(_pos select 0) +  random 1, _pos select 1, _pos select 2, _pos select 3 ];
+	
+} forEach allControls _display;
+
 // Get the controls in the display
-private _TXTfps = _display displayCtrl 1000;
+private _TXT_Expression = _display displayCtrl 1000;
+private _TXT_Value 		= _display displayCtrl 1001;
 private _Graph1	= _display displayCtrl 2000;
 private _Graph2	= _display displayCtrl 2001;
 private _Graph3 = _display displayCtrl 2002;
@@ -129,10 +144,16 @@ private _Graph1_total = 0;
 private _Graph2_total = 0;
 private _Graph2_total = 0;
 
+_TXT_Expression ctrlSetText format ["%1", _expression]; // Set the text of the expression
+_maxValue = 0;
+_minValue = 0;
+
 while {true} do {
 
 	_value = call compile _expression;
-
+	if (_value > _maxValue) then {_maxValue = _value};
+	if (_value < _minValue) then {_minValue = _value};
+	
 	_Graph1_total = _Graph1_total + _value;
 	_bar = _Graph1_bars select _Graph1_frame;
 	_bar ctrlSetFade 0;
@@ -140,8 +161,9 @@ while {true} do {
 	_bar progressSetPosition (_value / _Graph1_maxValue);
 	_bar ctrlSetFade 0.9 ;
 	_bar ctrlCommit _delay * _Graph1_maxBars;
-	_TXTfps ctrlSetText format [_expression + ": %1", _value]; // Set the text
-
+	
+	_TXT_Value ctrlSetText format ["%1 min: %2, max %3, update %4s", _value, _minValue, _maxValue, _delay]; // Set the value text
+	
 	// Resize all the progress bars if exceeds height
 	if (_value > _Graph1_maxValue) then {
 		_oldMaxValue = _Graph1_maxValue;
